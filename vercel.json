@@ -1,0 +1,19 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "src/entry-server.jsx",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "src/main.jsx",
+      "use": "@vercel/static-build"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/src/main.jsx"
+    }
+  ]
+}
