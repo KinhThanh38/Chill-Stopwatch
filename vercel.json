@@ -6,14 +6,14 @@
       "use": "@vercel/node"
     },
     {
-      "src": "src/main.jsx",
+      "src": "package.json",
       "use": "@vercel/static-build"
     }
   ],
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "/src/main.jsx"
+      "dest": "/src/entry-server.jsx"
     }
   ]
 }
