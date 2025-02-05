@@ -13,7 +13,7 @@
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "/src/entry-server.jsx"
+      "dest": "src/entry-server.jsx"
     }
   ]
 }
