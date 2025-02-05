@@ -57,6 +57,8 @@ const Home = () => {
     dispatch(fetchTracks());
   };
 
+  console.log("first")
+
   useEffect(() => {
     handleFetchTracks();
   }, []);
