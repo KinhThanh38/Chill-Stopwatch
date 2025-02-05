@@ -1,53 +1,69 @@
-import express from 'express';
-import { renderToString } from 'react-dom/server';
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import React from 'react';
-import App from '../src/App';
+import fs from 'node:fs'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
+import express from 'express'
+import { createServer as createViteServer } from 'vite'
 
-// ✅ Create __dirname equivalent
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
-const app = express();
-const isProd = process.env.NODE_ENV === 'production';
-const distPath = path.resolve(__dirname, '../dist');
+async function createServer() {
+  const app = express()
 
-// if (isProd) {
-app.use(express.static(distPath));
-// } else {
-//   const vite = await (await import('vite')).createServer({
-//     server: { middlewareMode: 'ssr' },
-//     appType: 'custom', // ✅ Avoid Vite's HTML serving behavior
-//   });
-//   app.use(vite.middlewares);
-// }
+  // Create Vite server in middleware mode and configure the app type as
+  // 'custom', disabling Vite's own HTML serving logic so parent server
+  // can take control
+  const vite = await createViteServer({
+    server: { middlewareMode: true },
+    appType: 'custom'
+  })
 
-app.get('*', async (req, res) => {
-  try {
-    const url = req.originalUrl;
-    let template = fs.readFileSync(path.resolve(distPath, 'index.html'), 'utf-8');
+  // Use vite's connect instance as middleware. If you use your own
+  // express router (express.Router()), you should use router.use
+  // When the server restarts (for example after the user modifies
+  // vite.config.js), `vite.middlewares` is still going to be the same
+  // reference (with a new internal stack of Vite and plugin-injected
+  // middlewares). The following is valid even after restarts.
+  app.use(vite.middlewares)
 
-    // ✅ For development, get the latest template
-    // if (!isProd) {
-    //   const vite = await (await import('vite')).createServer({
-    //     server: { middlewareMode: 'ssr' },
-    //     appType: 'custom',
-    //   });
-    //   template = await vite.transformIndexHtml(url, template);
-    // }
+  app.use('*', async (req, res, next) => {
+    const url = req.originalUrl
 
-    const appHtml = renderToString(<App />);
-    const finalHtml = template.replace(`<!--app-->`, appHtml);
+    try {
+      // 1. Read index.html
+      let template = fs.readFileSync(
+        path.resolve(__dirname, 'index.html'),
+        'utf-8',
+      )
 
-    res.status(200).set({ 'Content-Type': 'text/html' }).end(finalHtml);
-  } catch (error) {
-    console.error('Error during SSR:', error);
-    res.status(500).end('Internal Server Error');
-  }
-});
+      // 2. Apply Vite HTML transforms. This injects the Vite HMR client,
+      //    and also applies HTML transforms from Vite plugins, e.g. global
+      //    preambles from @vitejs/plugin-react
+      template = await vite.transformIndexHtml(url, template)
 
-app.listen(3000, () => {
-  console.log('✅ Server is running at http://localhost:3000');
-});
+      // 3. Load the server entry. ssrLoadModule automatically transforms
+      //    ESM source code to be usable in Node.js! There is no bundling
+      //    required, and provides efficient invalidation similar to HMR.
+      const { render } = await vite.ssrLoadModule('/src/entry-server.js')
+
+      // 4. render the app HTML. This assumes entry-server.js's exported
+      //     `render` function calls appropriate framework SSR APIs,
+      //    e.g. ReactDOMServer.renderToString()
+      const appHtml = await render(url)
+
+      // 5. Inject the app-rendered HTML into the template.
+      const html = template.replace(`<!--app-->`, () => appHtml)
+
+      // 6. Send the rendered HTML back.
+      res.status(200).set({ 'Content-Type': 'text/html' }).end(html)
+    } catch (e) {
+      // If an error is caught, let Vite fix the stack trace so it maps back
+      // to your actual source code.
+      vite.ssrFixStacktrace(e)
+      next(e)
+    }
+  })
+
+  app.listen(5173)
+}
+
+createServer()
