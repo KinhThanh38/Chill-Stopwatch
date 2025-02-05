@@ -1,6 +1,12 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import path from "path";
+import { fileURLToPath } from "url";
+
+// ✅ Create __dirname equivalent
+const __filename = fileURLToPath(import.meta.url);
+console.log(__filename)
+const __dirname = path.dirname(__filename);
 
 export default defineConfig({
   plugins: [react()],
@@ -17,21 +23,22 @@ export default defineConfig({
     },
   },
   ssr: {
-    // Xử lý các gói không tương thích với SSR
     noExternal: ["react-i18next", "i18next"],
+    external: ['react-dom/server'],
+
   },
   build: {
-    ssr: "src/entry-server.jsx", // Đầu vào cho SSR
-    outDir: "dist",              // Thư mục build
+    ssr: "src/entry-server.jsx",
+    outDir: "dist",
     rollupOptions: {
       input: {
-        main: path.resolve(__dirname, "index.html"), // File HTML chính
+        main: path.resolve(__dirname, "index.html"), // ✅ Fixed here
       },
     },
   },
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, "src"), // Alias cho import dễ dàng hơn
+      "@": path.resolve(__dirname, "src"), // ✅ Fixed here
     },
   },
 });

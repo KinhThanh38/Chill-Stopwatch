@@ -1,12 +1,14 @@
+<!-- index.html -->
 <!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="./src/assets/img/icon.png" />
+    <link rel="icon" type="image/svg+xml" href="/assets/img/icon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Chill October16th</title>
   </head>
   <body>
+    <!-- Nội dung render từ server sẽ được chèn vào đây -->
     <div id="root"><!--app--></div>
 
     <!-- Trạng thái Redux đã được preload từ server -->
@@ -14,7 +16,7 @@
       window.__PRELOADED_STATE__ = <!--state-->
     </script>
 
-    <!-- Vite sẽ inject main script ở đây -->
+    <!-- Client-side bundle (sẽ được Vite build) -->
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
