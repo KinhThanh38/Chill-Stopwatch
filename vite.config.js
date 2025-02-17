@@ -10,35 +10,35 @@ const __dirname = path.dirname(__filename);
 
 export default defineConfig({
   plugins: [react()],
-  server: {
-    port: 3000,
-    open: true,
-    proxy: {
-      "/socket.io": {
-        target: "https://socket-server-ay7s.onrender.com",
-        changeOrigin: true,
-        secure: false,
-        ws: true, // Hỗ trợ WebSocket
-      },
-    },
-  },
-  ssr: {
-    noExternal: ["react-i18next", "i18next"],
-    external: ['react-dom/server'],
+  // server: {
+  //   port: 5173,
+  //   open: true,
+  //   proxy: {
+  //     "/socket.io": {
+  //       target: "https://socket-server-ay7s.onrender.com",
+  //       changeOrigin: true,
+  //       secure: false,
+  //       ws: true, // Hỗ trợ WebSocket
+  //     },
+  //   },
+  // },
+  // ssr: {
+  //   noExternal: ["react-i18next", "i18next"],
+  //   external: ['react-dom/server'],
 
-  },
-  build: {
-    ssr: "src/entry-server.jsx",
-    outDir: "dist",
-    rollupOptions: {
-      input: {
-        main: path.resolve(__dirname, "index.html"), // ✅ Fixed here
-      },
-    },
-  },
-  resolve: {
-    alias: {
-      "@": path.resolve(__dirname, "src"), // ✅ Fixed here
-    },
-  },
+  // },
+  // build: {
+  //   ssr: "src/entry-server.jsx",
+  //   outDir: "dist",
+  //   rollupOptions: {
+  //     input: {
+  //       main: path.resolve(__dirname, "index.html"), // ✅ Fixed here
+  //     },
+  //   },
+  // },
+  // resolve: {
+  //   alias: {
+  //     "@": path.resolve(__dirname, "src"), // ✅ Fixed here
+  //   },
+  // },
 });

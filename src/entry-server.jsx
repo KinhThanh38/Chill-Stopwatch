@@ -5,7 +5,7 @@ import { Provider } from "react-redux";
 import store from "./redux/store.js";
 
 // Hàm render cho SSR
-export function render() {
+export function render(_url) {
   const appHtml = renderToString(
     <Provider store={store}>
       <App />
